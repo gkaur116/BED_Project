@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { HTTP_STATUS } from "../../../constants/httpConstants";
 import * as orderService from "../services/orderService";
 
@@ -6,10 +6,12 @@ import * as orderService from "../services/orderService";
  * Retrieves all orders
  * @param req - Express request object
  * @param res - Express response object
+ * @param next - Express next function
  */
 export const getAllOrders = async (
   req: Request,
-  res: Response
+  res: Response,
+  next: NextFunction
 ): Promise<void> => {
   try {
     const orders = await orderService.getAllOrders();
@@ -17,10 +19,8 @@ export const getAllOrders = async (
       message: "Orders retrieved successfully",
       data: orders,
     });
-  } catch (error) {
-    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-      message: "Failed to retrieve orders",
-    });
+  } catch (error: unknown) {
+    next(error);
   }
 };
 
@@ -28,10 +28,12 @@ export const getAllOrders = async (
  * Retrieves a single order by ID
  * @param req - Express request object
  * @param res - Express response object
+ * @param next - Express next function
  */
 export const getOrderById = async (
   req: Request,
-  res: Response
+  res: Response,
+  next: NextFunction
 ): Promise<void> => {
   try {
     const id: string = req.params.id;
@@ -40,10 +42,8 @@ export const getOrderById = async (
       message: "Order retrieved successfully",
       data: order,
     });
-  } catch (error) {
-    res.status(HTTP_STATUS.NOT_FOUND).json({
-      message: "Order not found",
-    });
+  } catch (error: unknown) {
+    next(error);
   }
 };
 
@@ -51,32 +51,26 @@ export const getOrderById = async (
  * Creates a new order
  * @param req - Express request object
  * @param res - Express response object
+ * @param next - Express next function
  */
 export const createOrder = async (
   req: Request,
-  res: Response
+  res: Response,
+  next: NextFunction
 ): Promise<void> => {
   try {
     const { userId, items, totalPrice } = req.body;
-    if (!userId) {
-      res.status(HTTP_STATUS.BAD_REQUEST).json({
-        message: "User ID is required",
-      });
-    } else {
-      const newOrder = await orderService.createOrder({
-        userId,
-        items,
-        totalPrice,
-      });
-      res.status(HTTP_STATUS.CREATED).json({
-        message: "Order created successfully",
-        data: newOrder,
-      });
-    }
-  } catch (error) {
-    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-      message: "Failed to create order",
+    const newOrder = await orderService.createOrder({
+      userId,
+      items,
+      totalPrice,
     });
+    res.status(HTTP_STATUS.CREATED).json({
+      message: "Order created successfully",
+      data: newOrder,
+    });
+  } catch (error: unknown) {
+    next(error);
   }
 };
 
@@ -84,10 +78,12 @@ export const createOrder = async (
  * Updates an existing order
  * @param req - Express request object
  * @param res - Express response object
+ * @param next - Express next function
  */
 export const updateOrder = async (
   req: Request,
-  res: Response
+  res: Response,
+  next: NextFunction
 ): Promise<void> => {
   try {
     const id: string = req.params.id;
@@ -97,10 +93,8 @@ export const updateOrder = async (
       message: "Order updated successfully",
       data: updatedOrder,
     });
-  } catch (error) {
-    res.status(HTTP_STATUS.NOT_FOUND).json({
-      message: "Order not found",
-    });
+  } catch (error: unknown) {
+    next(error);
   }
 };
 
@@ -108,10 +102,12 @@ export const updateOrder = async (
  * Deletes an order
  * @param req - Express request object
  * @param res - Express response object
+ * @param next - Express next function
  */
 export const deleteOrder = async (
   req: Request,
-  res: Response
+  res: Response,
+  next: NextFunction
 ): Promise<void> => {
   try {
     const id: string = req.params.id;
@@ -119,9 +115,7 @@ export const deleteOrder = async (
     res.status(HTTP_STATUS.OK).json({
       message: "Order deleted successfully",
     });
-  } catch (error) {
-    res.status(HTTP_STATUS.NOT_FOUND).json({
-      message: "Order not found",
-    });
+  } catch (error: unknown) {
+    next(error);
   }
 };
