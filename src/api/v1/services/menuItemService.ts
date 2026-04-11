@@ -1,25 +1,18 @@
-import { HTTP_STATUS } from "../../../constants/httpConstants";
+import * as firestoreRepository from "../repositories/firestoreRepository";
+import { MenuItem } from "../models/menuItemModel";
 
-/**
- * Represents a menu item in the coffee shop
- */
-export interface MenuItem {
-  id: string;
-  name: string;
-  price: number;
-  category: string;
-  availability: boolean;
-}
-
-// In-memory storage for demo purposes
-const menuItems: MenuItem[] = [];
+const COLLECTION = "menuItems";
 
 /**
  * Retrieves all menu items
  * @returns Array of all menu items
  */
 export const getAllMenuItems = async (): Promise<MenuItem[]> => {
-  return structuredClone(menuItems);
+  const snapshot = await firestoreRepository.getDocuments(COLLECTION);
+  return snapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  })) as MenuItem[];
 };
 
 /**
@@ -33,15 +26,11 @@ export const createMenuItem = async (itemData: {
   category: string;
   availability: boolean;
 }): Promise<MenuItem> => {
-  const newItem: MenuItem = {
-    id: Date.now().toString(),
-    name: itemData.name,
-    price: itemData.price,
-    category: itemData.category,
-    availability: itemData.availability,
-  };
-  menuItems.push(newItem);
-  return newItem;
+  const id = await firestoreRepository.createDocument<MenuItem>(
+    COLLECTION,
+    itemData
+  );
+  return { id, ...itemData };
 };
 
 /**
@@ -49,36 +38,19 @@ export const createMenuItem = async (itemData: {
  * @param id - The ID of the menu item to update
  * @param itemData - The fields to update
  * @returns The updated menu item
- * @throws Error if menu item is not found
  */
 export const updateMenuItem = async (
   id: string,
   itemData: Pick<MenuItem, "name" | "price" | "category" | "availability">
 ): Promise<MenuItem> => {
-  const index: number = menuItems.findIndex(
-    (item: MenuItem) => item.id === id
-  );
-  if (index === -1) {
-    throw new Error(`Menu item with ID ${id} not found`);
-  }
-  menuItems[index] = {
-    ...menuItems[index],
-    ...itemData,
-  };
-  return structuredClone(menuItems[index]);
+  await firestoreRepository.updateDocument<MenuItem>(COLLECTION, id, itemData);
+  return { id, ...itemData };
 };
 
 /**
  * Deletes a menu item
  * @param id - The ID of the menu item to delete
- * @throws Error if menu item is not found
  */
 export const deleteMenuItem = async (id: string): Promise<void> => {
-  const index: number = menuItems.findIndex(
-    (item: MenuItem) => item.id === id
-  );
-  if (index === -1) {
-    throw new Error(`Menu item with ID ${id} not found`);
-  }
-  menuItems.splice(index, 1);
+  await firestoreRepository.deleteDocument(COLLECTION, id);
 };
