@@ -1,39 +1,31 @@
-/**
- * Represents an order in the coffee shop
- */
-export interface Order {
-  id: string;
-  userId: string;
-  items: string[];
-  totalPrice: number;
-  status: string;
-}
+import * as firestoreRepository from "../repositories/firestoreRepository";
+import { Order } from "../models/orderModel";
 
-// In-memory storage for demo purposes
-const orders: Order[] = [];
+const COLLECTION = "orders";
 
 /**
  * Retrieves all orders
  * @returns Array of all orders
  */
 export const getAllOrders = async (): Promise<Order[]> => {
-  return structuredClone(orders);
+  const snapshot = await firestoreRepository.getDocuments(COLLECTION);
+  return snapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  })) as Order[];
 };
 
 /**
  * Retrieves a single order by ID
  * @param id - The ID of the order to retrieve
  * @returns The order
- * @throws Error if order is not found
  */
 export const getOrderById = async (id: string): Promise<Order> => {
-  const order: Order | undefined = orders.find(
-    (order: Order) => order.id === id
-  );
-  if (!order) {
+  const doc = await firestoreRepository.getDocumentById(COLLECTION, id);
+  if (!doc) {
     throw new Error(`Order with ID ${id} not found`);
   }
-  return structuredClone(order);
+  return { id: doc.id, ...doc.data() } as Order;
 };
 
 /**
@@ -46,15 +38,12 @@ export const createOrder = async (orderData: {
   items: string[];
   totalPrice: number;
 }): Promise<Order> => {
-  const newOrder: Order = {
-    id: Date.now().toString(),
-    userId: orderData.userId,
-    items: orderData.items,
-    totalPrice: orderData.totalPrice,
-    status: "pending",
-  };
-  orders.push(newOrder);
-  return newOrder;
+  const orderWithStatus = { ...orderData, status: "pending" };
+  const id = await firestoreRepository.createDocument<Order>(
+    COLLECTION,
+    orderWithStatus
+  );
+  return { id, ...orderWithStatus };
 };
 
 /**
@@ -62,32 +51,20 @@ export const createOrder = async (orderData: {
  * @param id - The ID of the order to update
  * @param orderData - The fields to update
  * @returns The updated order
- * @throws Error if order is not found
  */
 export const updateOrder = async (
   id: string,
   orderData: Pick<Order, "status">
 ): Promise<Order> => {
-  const index: number = orders.findIndex((order: Order) => order.id === id);
-  if (index === -1) {
-    throw new Error(`Order with ID ${id} not found`);
-  }
-  orders[index] = {
-    ...orders[index],
-    ...orderData,
-  };
-  return structuredClone(orders[index]);
+  await firestoreRepository.updateDocument<Order>(COLLECTION, id, orderData);
+  const doc = await firestoreRepository.getDocumentById(COLLECTION, id);
+  return { id, ...doc!.data() } as Order;
 };
 
 /**
  * Deletes an order
  * @param id - The ID of the order to delete
- * @throws Error if order is not found
  */
 export const deleteOrder = async (id: string): Promise<void> => {
-  const index: number = orders.findIndex((order: Order) => order.id === id);
-  if (index === -1) {
-    throw new Error(`Order with ID ${id} not found`);
-  }
-  orders.splice(index, 1);
+  await firestoreRepository.deleteDocument(COLLECTION, id);
 };

@@ -1,16 +1,7 @@
-/**
- * Represents a review in the coffee shop
- */
-export interface Review {
-  id: string;
-  userId: string;
-  menuItemId: string;
-  rating: number;
-  comment: string;
-}
+import * as firestoreRepository from "../repositories/firestoreRepository";
+import { Review } from "../models/reviewModel";
 
-// In-memory storage for demo purposes
-const reviews: Review[] = [];
+const COLLECTION = "reviews";
 
 /**
  * Retrieves all reviews for a menu item
@@ -20,10 +11,12 @@ const reviews: Review[] = [];
 export const getReviewsByMenuItemId = async (
   menuItemId: string
 ): Promise<Review[]> => {
-  const menuItemReviews: Review[] = reviews.filter(
-    (review: Review) => review.menuItemId === menuItemId
-  );
-  return structuredClone(menuItemReviews);
+  const snapshot = await firestoreRepository.getDocuments(COLLECTION);
+  const allReviews = snapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  })) as Review[];
+  return allReviews.filter((review) => review.menuItemId === menuItemId);
 };
 
 /**
@@ -37,26 +30,17 @@ export const createReview = async (reviewData: {
   rating: number;
   comment: string;
 }): Promise<Review> => {
-  const newReview: Review = {
-    id: Date.now().toString(),
-    userId: reviewData.userId,
-    menuItemId: reviewData.menuItemId,
-    rating: reviewData.rating,
-    comment: reviewData.comment,
-  };
-  reviews.push(newReview);
-  return newReview;
+  const id = await firestoreRepository.createDocument<Review>(
+    COLLECTION,
+    reviewData
+  );
+  return { id, ...reviewData };
 };
 
 /**
  * Deletes a review
  * @param id - The ID of the review to delete
- * @throws Error if review is not found
  */
 export const deleteReview = async (id: string): Promise<void> => {
-  const index: number = reviews.findIndex((review: Review) => review.id === id);
-  if (index === -1) {
-    throw new Error(`Review with ID ${id} not found`);
-  }
-  reviews.splice(index, 1);
+  await firestoreRepository.deleteDocument(COLLECTION, id);
 };

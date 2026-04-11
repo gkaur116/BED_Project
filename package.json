@@ -40,6 +40,8 @@
     },
     "dependencies": {
         "@types/morgan": "^1.9.10",
+        "firebase-admin": "^13.7.0",
+        "joi": "^18.1.2",
         "morgan": "^1.10.1"
     }
 }
