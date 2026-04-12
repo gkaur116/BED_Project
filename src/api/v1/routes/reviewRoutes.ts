@@ -20,7 +20,7 @@ router.get(
 router.post(
   "/reviews",
   authenticate,
-  isAuthorized({ hasRole: ["admin", "user"] }),
+  isAuthorized({ hasRole: ["customer"] }),
   validateRequest(reviewSchemas.create),
   createReview
 );

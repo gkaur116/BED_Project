@@ -28,7 +28,7 @@ router.get(
 router.post(
   "/orders",
   authenticate,
-  isAuthorized({ hasRole: ["admin", "user"] }),
+  isAuthorized({ hasRole: ["customer"] }),
   validateRequest(orderSchemas.create),
   createOrder
 );
