@@ -1,5 +1,6 @@
 import * as firestoreRepository from "../repositories/firestoreRepository";
 import { Order } from "../models/orderModel";
+import { sendOrderConfirmationEmail } from "./emailService";
 
 const COLLECTION = "orders";
 
@@ -29,7 +30,7 @@ export const getOrderById = async (id: string): Promise<Order> => {
 };
 
 /**
- * Creates a new order
+ * Creates a new order and sends confirmation email
  * @param orderData - The data for the new order
  * @returns The created order
  */
@@ -37,12 +38,27 @@ export const createOrder = async (orderData: {
   userId: string;
   items: string[];
   totalPrice: number;
+  customerEmail?: string;
 }): Promise<Order> => {
-  const orderWithStatus = { ...orderData, status: "pending" };
+  const orderWithStatus = {
+    userId: orderData.userId,
+    items: orderData.items,
+    totalPrice: orderData.totalPrice,
+    status: "pending",
+  };
   const id = await firestoreRepository.createDocument<Order>(
     COLLECTION,
     orderWithStatus
   );
+  // Send confirmation email if customer email is provided
+  if (orderData.customerEmail) {
+    await sendOrderConfirmationEmail(
+      orderData.customerEmail,
+      id,
+      orderData.totalPrice,
+      orderData.items
+    );
+  }
   return { id, ...orderWithStatus };
 };
 
