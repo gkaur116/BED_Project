@@ -1,4 +1,4 @@
-const getCorsOptions = () => {
+export const getCorsOptions = () => {
     const isDevelopment = process.env.NODE_ENV === "development";
 
     if (isDevelopment) {
