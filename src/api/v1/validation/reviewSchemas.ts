@@ -1,7 +1,36 @@
 import Joi from "joi";
 
+/**
+ * @openapi
+ * components:
+ *   schemas:
+ *     Review:
+ *       type: object
+ *       required:
+ *         - userId
+ *         - menuItemId
+ *         - rating
+ *         - comment
+ *       properties:
+ *         id:
+ *           type: string
+ *           example: "RZVZ3BMLfnt11yZX3WyA"
+ *         userId:
+ *           type: string
+ *           example: "user123"
+ *         menuItemId:
+ *           type: string
+ *           example: "P5loGUcYDe3uCvNnE60n"
+ *         rating:
+ *           type: number
+ *           minimum: 1
+ *           maximum: 5
+ *           example: 5
+ *         comment:
+ *           type: string
+ *           example: "Amazing coffee!"
+ */
 export const reviewSchemas = {
-  // POST /reviews - Create new review
   create: {
     body: Joi.object({
       userId: Joi.string().required().messages({
@@ -23,7 +52,6 @@ export const reviewSchemas = {
       }),
     }),
   },
-  // GET /reviews/:menuItemId - Get reviews by menu item ID
   getByMenuItemId: {
     params: Joi.object({
       menuItemId: Joi.string().required().messages({
@@ -32,7 +60,6 @@ export const reviewSchemas = {
       }),
     }),
   },
-  // DELETE /reviews/:id - Delete review
   delete: {
     params: Joi.object({
       id: Joi.string().required().messages({

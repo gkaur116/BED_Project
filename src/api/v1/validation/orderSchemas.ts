@@ -1,7 +1,39 @@
 import Joi from "joi";
 
+/**
+ * @openapi
+ * components:
+ *   schemas:
+ *     Order:
+ *       type: object
+ *       required:
+ *         - userId
+ *         - items
+ *         - totalPrice
+ *       properties:
+ *         id:
+ *           type: string
+ *           example: "04NnMEfmuMxTpHAqaxKR"
+ *         userId:
+ *           type: string
+ *           example: "user123"
+ *         items:
+ *           type: array
+ *           items:
+ *             type: string
+ *           example: ["Caramel Latte"]
+ *         totalPrice:
+ *           type: number
+ *           example: 5.99
+ *         status:
+ *           type: string
+ *           enum: [pending, preparing, completed]
+ *           example: "pending"
+ *         customerEmail:
+ *           type: string
+ *           example: "customer@test.com"
+ */
 export const orderSchemas = {
-  // POST /orders - Create new order
   create: {
     body: Joi.object({
       userId: Joi.string().required().messages({
@@ -14,9 +46,9 @@ export const orderSchemas = {
       totalPrice: Joi.number().required().messages({
         "any.required": "Total price is required",
       }),
+      customerEmail: Joi.string().optional(),
     }),
   },
-  // GET /orders/:id - Get order by ID
   getById: {
     params: Joi.object({
       id: Joi.string().required().messages({
@@ -25,7 +57,6 @@ export const orderSchemas = {
       }),
     }),
   },
-  // PUT /orders/:id - Update order
   update: {
     params: Joi.object({
       id: Joi.string().required().messages({
@@ -44,7 +75,6 @@ export const orderSchemas = {
         }),
     }),
   },
-  // DELETE /orders/:id - Delete order
   delete: {
     params: Joi.object({
       id: Joi.string().required().messages({

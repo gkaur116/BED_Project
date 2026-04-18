@@ -59,11 +59,12 @@ export const createOrder = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { userId, items, totalPrice } = req.body;
+    const { userId, items, totalPrice, customerEmail } = req.body;
     const newOrder = await orderService.createOrder({
       userId,
       items,
       totalPrice,
+      customerEmail,
     });
     res.status(HTTP_STATUS.CREATED).json({
       message: "Order created successfully",

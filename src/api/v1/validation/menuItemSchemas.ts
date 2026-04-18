@@ -1,7 +1,34 @@
 import Joi from "joi";
 
+/**
+ * @openapi
+ * components:
+ *   schemas:
+ *     MenuItem:
+ *       type: object
+ *       required:
+ *         - name
+ *         - price
+ *         - category
+ *         - availability
+ *       properties:
+ *         id:
+ *           type: string
+ *           example: "P5loGUcYDe3uCvNnE60n"
+ *         name:
+ *           type: string
+ *           example: "Caramel Latte"
+ *         price:
+ *           type: number
+ *           example: 5.99
+ *         category:
+ *           type: string
+ *           example: "coffee"
+ *         availability:
+ *           type: boolean
+ *           example: true
+ */
 export const menuItemSchemas = {
-  // POST /menu-items - Create new menu item
   create: {
     body: Joi.object({
       name: Joi.string().required().messages({
@@ -20,7 +47,6 @@ export const menuItemSchemas = {
       }),
     }),
   },
-  // PUT /menu-items/:id - Update menu item
   update: {
     params: Joi.object({
       id: Joi.string().required().messages({
@@ -39,7 +65,6 @@ export const menuItemSchemas = {
       availability: Joi.boolean().optional(),
     }),
   },
-  // DELETE /menu-items/:id - Delete menu item
   delete: {
     params: Joi.object({
       id: Joi.string().required().messages({
